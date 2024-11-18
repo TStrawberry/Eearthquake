@@ -79,7 +79,10 @@ extension EarthquakeListViewController: UITableViewDataSource, UITableViewDelega
         let cell = tableView.dequeueReusableCell(withIdentifier: EarthquakeListCell.reuseIdentifier, for: indexPath) as! EarthquakeListCell
 
         let earthquake = viewModel.earthquakeList[indexPath.row]
-        cell.textLabel?.text = earthquake.properties.place
+        cell.viewModel = EarthquakeCellViewModel(
+            place: earthquake.properties.place,
+            magnitude: earthquake.properties.mag
+        )
         return cell
     }
 }

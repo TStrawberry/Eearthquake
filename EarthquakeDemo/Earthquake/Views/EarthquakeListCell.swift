@@ -10,6 +10,14 @@ import UIKit
 class EarthquakeListCell: UITableViewCell {
     static let reuseIdentifier = "EarthquakeListCell"
     
+    var viewModel: EarthquakeCellViewModel? {
+        didSet {
+            self.textLabel?.text = viewModel?.placeText
+            self.detailTextLabel?.text = viewModel?.magnitudeText
+            self.backgroundColor = viewModel?.backgroundColor
+        }
+    }
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
     }
