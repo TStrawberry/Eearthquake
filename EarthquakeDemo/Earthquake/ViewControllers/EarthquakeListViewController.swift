@@ -7,6 +7,7 @@
 
 import UIKit
 import Combine
+import MapKit
 
 @MainActor
 class EarthquakeListViewController: UIViewController {
@@ -84,5 +85,16 @@ extension EarthquakeListViewController: UITableViewDataSource, UITableViewDelega
             magnitude: earthquake.properties.mag
         )
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard indexPath.row < viewModel.earthquakeList.count else { return }
+        guard 2 <= viewModel.earthquakeList[indexPath.row].geometry.coordinates.count else { return }
+    
+        let coordinates = viewModel.earthquakeList[indexPath.row].geometry.coordinates
+        present(
+            EarthquakeMapViewController(latitude: coordinates[1], longitude: coordinates[0]),
+            animated: true
+        )
     }
 }
