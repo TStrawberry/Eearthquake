@@ -6,15 +6,20 @@
 //
 
 import UIKit
+import Combine
 
 @MainActor
 class EarthquakeListViewController: UIViewController {
+    let viewModel = EarthquakeListViewModel()
 
     private let tableView: UITableView = { return UITableView() }()
+    
+    private var cancellable: Set<AnyCancellable> = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        bindViewModel()
         setupTableView()
         setupRefreshControl()
     }
@@ -39,20 +44,42 @@ extension EarthquakeListViewController {
     
     private func setupRefreshControl() {
         let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(viewModel, action: #selector(viewModel.onRefreshControlTriggered), for: .valueChanged)
         tableView.refreshControl = refreshControl
+    }
+    
+    private func bindViewModel() {
+        viewModel.$earthquakeList
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.tableView.reloadData()
+            }
+            .store(in: &cancellable)
+        
+        viewModel.$isLoading
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isLoading in
+                if isLoading {
+                    self?.tableView.refreshControl?.beginRefreshing()
+                } else {
+                    self?.tableView.refreshControl?.endRefreshing()
+                }
+            }
+            .store(in: &cancellable)
     }
 }
 
 
 extension EarthquakeListViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
+        return viewModel.earthquakeList.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: EarthquakeListCell.reuseIdentifier, for: indexPath) as! EarthquakeListCell
 
-        cell.textLabel?.text = "text label"
+        let earthquake = viewModel.earthquakeList[indexPath.row]
+        cell.textLabel?.text = earthquake.properties.place
         return cell
     }
 }
